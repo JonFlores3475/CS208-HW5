@@ -48,6 +48,17 @@ public class ClassesController
         return listOfClasses;
     }
 
+    @GetMapping(value = "/students",produces = MediaType.APPLICATION_JSON_VALUE)
+    List<Student> listAllStudents(){
+        List<Student> listOfStudents = Main.database.listAllStudents();
+        return listOfStudents;
+    }
+
+    @GetMapping(value = "/students/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    Student getStudent(@PathVariable("id") int id) {
+        System.out.println("id = " + id);
+        return Main.database.getStudentById(id);
+    }
 
     /**
      * GET /classes/{id}
