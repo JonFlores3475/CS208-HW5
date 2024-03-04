@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.sql.Date;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -48,17 +49,6 @@ public class ClassesController
         return listOfClasses;
     }
 
-    @GetMapping(value = "/students",produces = MediaType.APPLICATION_JSON_VALUE)
-    List<Student> listAllStudents(){
-        List<Student> listOfStudents = Main.database.listAllStudents();
-        return listOfStudents;
-    }
-
-    @GetMapping(value = "/students/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    Student getStudent(@PathVariable("id") int id) {
-        System.out.println("id = " + id);
-        return Main.database.getStudentById(id);
-    }
 
     /**
      * GET /classes/{id}

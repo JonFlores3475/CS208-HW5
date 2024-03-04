@@ -27,6 +27,12 @@ public class StudentsController
      * @return a list of students (extracted from the students table in the database) as JSON
      */
     // TODO: implement this route
+    @GetMapping(value = "/students",produces = MediaType.APPLICATION_JSON_VALUE)
+    List<Student> listAllStudents(){
+        List<Student> listOfStudents = Main.database.listAllStudents();
+        return listOfStudents;
+    }
+
 
 
 
@@ -38,6 +44,18 @@ public class StudentsController
      * @throws ResponseStatusException: a 404 status code if the student with id = {id} does not exist
      */
     // TODO: implement this route
+    @GetMapping(value = "/students/{id}", produces = MediaType.APPLICATION_JSON_VALUE )
+    Student getStudent(@PathVariable("id") int id) {
+        System.out.println("id = " + id);
+        Student student = Main.database.getStudentById(id);
+        if ( student == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "failed to retrieve student with id = " + id + " in the database because it does not exist"
+            );
+        }
+        return student;
+    }
 
 
 
@@ -54,6 +72,21 @@ public class StudentsController
      * @return the created student (which was inserted into the database), as JSON
      */
     // TODO: implement this route
+    @PostMapping("/students")
+    Student addNewStudent(
+            @RequestParam("first_name") String first_name,
+            @RequestParam("last_name") String last_name,
+            @RequestParam("birth_date") String birth_date
+    )
+    {
+        System.out.println("first_name      = " + first_name);
+        System.out.println("last_name       = " + last_name);
+        System.out.println("birth_date      = " + birth_date);
+
+        Student createdStudent = new Student(first_name, last_name, Date.valueOf(birth_date.trim()));
+        Main.database.addNewStudent(createdStudent);
+        return createdStudent;
+    }
 
 
 

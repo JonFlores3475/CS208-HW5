@@ -388,6 +388,91 @@ public class Database {
             return null;
         }
     }
+    public void create(Class newClass)
+    {
+        String sql =
+                "INSERT INTO classes (code, title, description, max_students)\n" +
+                        "VALUES (?, ?, ?, ?);";
+
+        try
+                (
+                        Connection connection = getDatabaseConnection();
+                        PreparedStatement sqlStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                )
+        {
+            sqlStatement.setString(1, newClass.getCode());
+            sqlStatement.setString(2, newClass.getTitle());
+            sqlStatement.setString(3, newClass.getDescription());
+            sqlStatement.setInt(4, newClass.getMaxStudents());
+
+            int numberOfRowsAffected = sqlStatement.executeUpdate();
+            System.out.println("numberOfRowsAffected = " + numberOfRowsAffected);
+
+            if (numberOfRowsAffected > 0)
+            {
+                ResultSet resultSet = sqlStatement.getGeneratedKeys();
+
+                while (resultSet.next())
+                {
+                    // "last_insert_rowid()" is the column name that contains the id of the last inserted row
+                    // alternatively, we could have used resultSet.getInt(1); to get the id of the first column returned
+                    int generatedIdForTheNewlyInsertedClass = resultSet.getInt("last_insert_rowid()");
+                    System.out.println("SUCCESSFULLY inserted a new class with id = " + generatedIdForTheNewlyInsertedClass);
+
+                    // this can be useful if we need to make additional processing on the newClass object
+                    newClass.setId(generatedIdForTheNewlyInsertedClass);
+                }
+
+                resultSet.close();
+            }
+        }
+        catch (SQLException sqlException)
+        {
+            System.out.println("!!! SQLException: failed to insert into the classes table");
+            System.out.println(sqlException.getMessage());
+        }
+    }
+    public void addNewStudent(Student newStudent)
+    {
+        // 💡 HINT: in a prepared statement
+        // to set the date parameter in the format "YYYY-MM-DD", use the code:
+        // sqlStatement.setString(columnIndexTBD, newStudent.getBirthDate().toString());
+        //
+        // to set the date parameter in the unix format (i.e., milliseconds since 1970), use this code:
+        // sqlStatement.setDate(columnIndexTBD, newStudent.getBirthDate());
+
+        // TODO: add your code here
+        String sql =
+                "INSERT INTO students (id, first_name,last_name,birth_date)\n" +
+                        "VALUES (?, ?, ?, ?);";
+        String sql1 =
+                "SELECT max(students.id)\n" +
+                        "FROM students;\n";
+
+        try
+                (
+                        Connection connection = getDatabaseConnection();
+                        PreparedStatement sqlStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                        Statement res = connection.createStatement();
+                        ResultSet resultSet = res.executeQuery(sql1);
+                )
+        {
+            int id = resultSet.getInt(1)+1;
+            newStudent.setId(id);
+            sqlStatement.setInt(1, newStudent.getId());
+            sqlStatement.setString(2, newStudent.getFirstName());
+            sqlStatement.setString(3, newStudent.getLastName());
+            sqlStatement.setString(4, newStudent.getBirthDate().toString());
+
+            int numberOfRowsAffected = sqlStatement.executeUpdate();
+            System.out.println("numberOfRowsAffected = " + numberOfRowsAffected);
+        }
+        catch (SQLException sqlException)
+        {
+            System.out.println("!!! SQLException: failed to insert into the classes table");
+            System.out.println(sqlException.getMessage());
+        }
+    }
 
     private void printTableHeader(String[] listOfColumnNames)
     {
