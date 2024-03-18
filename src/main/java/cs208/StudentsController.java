@@ -18,8 +18,7 @@ import java.util.List;
 
 
 @RestController
-public class StudentsController
-{
+public class StudentsController {
 
     /**
      * GET /students
@@ -27,28 +26,25 @@ public class StudentsController
      * @return a list of students (extracted from the students table in the database) as JSON
      */
     // TODO: implement this route
-    @GetMapping(value = "/students",produces = MediaType.APPLICATION_JSON_VALUE)
-    List<Student> listAllStudents(){
+    @GetMapping(value = "/students", produces = MediaType.APPLICATION_JSON_VALUE)
+    List<Student> listAllStudents() {
         List<Student> listOfStudents = Main.database.listAllStudents();
         return listOfStudents;
     }
-
-
 
 
     /**
      * GET /students/{id}
      *
      * @return the student with id = {id} (extracted from the students table in the database) as JSON
-     *
      * @throws ResponseStatusException: a 404 status code if the student with id = {id} does not exist
      */
     // TODO: implement this route
-    @GetMapping(value = "/students/{id}", produces = MediaType.APPLICATION_JSON_VALUE )
+    @GetMapping(value = "/students/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     Student getStudent(@PathVariable("id") int id) {
         System.out.println("id = " + id);
         Student student = Main.database.getStudentById(id);
-        if ( student == null) {
+        if (student == null) {
             throw new ResponseStatusException(
                     HttpStatus.NOT_FOUND,
                     "failed to retrieve student with id = " + id + " in the database because it does not exist"
@@ -58,14 +54,13 @@ public class StudentsController
     }
 
 
-
     /**
      * POST /students
      * with the following form parameters:
-     *      firstName
-     *      lastName
-     *      birthDate (in ISO format: yyyy-mm-dd)
-     *
+     * firstName
+     * lastName
+     * birthDate (in ISO format: yyyy-mm-dd)
+     * <p>
      * The parameters passed in the body of the POST request are used to create a new student.
      * The new student is inserted into the students table in the database.
      *
@@ -77,8 +72,7 @@ public class StudentsController
             @RequestParam("first_name") String first_name,
             @RequestParam("last_name") String last_name,
             @RequestParam("birth_date") String birth_date
-    )
-    {
+    ) {
         System.out.println("first_name      = " + first_name);
         System.out.println("last_name       = " + last_name);
         System.out.println("birth_date      = " + birth_date);
@@ -89,19 +83,17 @@ public class StudentsController
     }
 
 
-
     /**
      * PUT /students/{id}
      * with the following form parameters:
-     *      firstName
-     *      lastName
-     *      birthDate
-     *
+     * firstName
+     * lastName
+     * birthDate
+     * <p>
      * The parameters passed in the body of the PUT request are used to
      * update the existing student with id = {id} in the students table in the database.
      *
      * @return the updated student as JSON
-     *
      * @throws ResponseStatusException: a 404 status code if the student with id = {id} does not exist
      */
     // TODO: implement this route
@@ -111,23 +103,22 @@ public class StudentsController
             @RequestParam("first_name") String first_name,
             @RequestParam("last_name") String last_name,
             @RequestParam("birth_date") String birth_date
-    )
-    {
-       System.out.println("id   = "+id);
-       System.out.println("first_name   = "+first_name);
-       System.out.println("last_name   = "+last_name);
-       System.out.println("birth_date   = "+birth_date);
+    ) {
+        System.out.println("id   = " + id);
+        System.out.println("first_name   = " + first_name);
+        System.out.println("last_name   = " + last_name);
+        System.out.println("birth_date   = " + birth_date);
 
-       Student student = new Student(id, first_name, last_name, Date.valueOf(birth_date));
-       Student student1 = Main.database.UpdateExistingStudentInformation(student);
-       if (student1 == null) {
-           throw new ResponseStatusException(
-                   HttpStatus.NOT_FOUND,
-                   "failed to update the student with id = " + id + " in the database because it does not exist"
-           );
-       }
-            return student;
+        Student student = new Student(id, first_name, last_name, Date.valueOf(birth_date));
+        Student student1 = Main.database.UpdateExistingStudentInformation(student);
+        if (student1 == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "failed to update the student with id = " + id + " in the database because it does not exist"
+            );
         }
+        return student;
+    }
 
 
 
@@ -158,5 +149,23 @@ public class StudentsController
      * @throws ResponseStatusException: a 404 status code if the student with id = {id} does not exist
      */
     // TODO: implement this route
-
+    @DeleteMapping(value = "/students/{id}")
+    void delete(@PathVariable("id") int id) {
+        System.out.println("id = " + id);
+        try {
+            Student studentToDelete = Main.database.getStudentById(id);
+            if (studentToDelete == null) {
+                throw new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "failed to delete the student with id = " + id + " from the database because it does not exist"
+                );
+            }
+            Main.database.deleteExistingStudent(id);
+        } catch (SQLException e) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNPROCESSABLE_ENTITY, // 422 error code
+                    "failed to delete the student with id = " + id + " from the database"
+            );
+        }
+    }
 }
