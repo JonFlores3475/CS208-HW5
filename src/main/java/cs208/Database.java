@@ -366,7 +366,7 @@ public class Database {
 
             ResultSet resultSet = sqlStatement.executeQuery();
 
-            if (resultSet.next() == false)
+            if (!resultSet.next())
             {
                 System.out.println("No class with id = " + id);
                 return null;
@@ -388,50 +388,7 @@ public class Database {
             return null;
         }
     }
-    public void create(Class newClass)
-    {
-        String sql =
-                "INSERT INTO classes (code, title, description, max_students)\n" +
-                        "VALUES (?, ?, ?, ?);";
 
-        try
-                (
-                        Connection connection = getDatabaseConnection();
-                        PreparedStatement sqlStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-                )
-        {
-            sqlStatement.setString(1, newClass.getCode());
-            sqlStatement.setString(2, newClass.getTitle());
-            sqlStatement.setString(3, newClass.getDescription());
-            sqlStatement.setInt(4, newClass.getMaxStudents());
-
-            int numberOfRowsAffected = sqlStatement.executeUpdate();
-            System.out.println("numberOfRowsAffected = " + numberOfRowsAffected);
-
-            if (numberOfRowsAffected > 0)
-            {
-                ResultSet resultSet = sqlStatement.getGeneratedKeys();
-
-                while (resultSet.next())
-                {
-                    // "last_insert_rowid()" is the column name that contains the id of the last inserted row
-                    // alternatively, we could have used resultSet.getInt(1); to get the id of the first column returned
-                    int generatedIdForTheNewlyInsertedClass = resultSet.getInt("last_insert_rowid()");
-                    System.out.println("SUCCESSFULLY inserted a new class with id = " + generatedIdForTheNewlyInsertedClass);
-
-                    // this can be useful if we need to make additional processing on the newClass object
-                    newClass.setId(generatedIdForTheNewlyInsertedClass);
-                }
-
-                resultSet.close();
-            }
-        }
-        catch (SQLException sqlException)
-        {
-            System.out.println("!!! SQLException: failed to insert into the classes table");
-            System.out.println(sqlException.getMessage());
-        }
-    }
     public void addNewStudent(Student newStudent)
     {
         // 💡 HINT: in a prepared statement
@@ -483,5 +440,52 @@ public class Database {
         }
         System.out.println();
         System.out.println(Utils.characterRepeat('-', 80));
+    }
+    public Student UpdateExistingStudentInformation(Student studentToUpdate){
+        Date birthDate = studentToUpdate.getBirthDate();
+        int studentID = studentToUpdate.getId();
+        String first_name = studentToUpdate.getFirstName();
+        String last_name = studentToUpdate.getLastName();
+        String sql1 =
+                "UPDATE students\n"+
+                        "SET first_name=?, last_name=?, birth_date=?\n"+
+                        "WHERE id = ?";
+        try {
+            Connection connection = getDatabaseConnection();
+            PreparedStatement res = connection.prepareStatement(sql1);
+            res.setString(1, first_name);
+            res.setString(2, last_name);
+            res.setDate(3, birthDate);
+            res.setInt(4, studentID);
+            res.executeQuery();
+        }
+
+        catch (SQLException sqlException)
+        {
+            System.out.println("!!! SQLException: failed to alter Students table");
+            System.out.println(sqlException.getMessage());
+        }
+        String sql =
+                "SELECT first_name, last_name\n"+
+                        "FROM students\n"+
+                        "WHERE id = ?";
+        try {
+            Connection connection = getDatabaseConnection();
+            PreparedStatement res1 = connection.prepareStatement(sql);
+            res1.setInt(1, studentID);
+            ResultSet ResultSet1 = res1.executeQuery();
+            while (ResultSet1.next()) {
+                first_name = ResultSet1.getString("first_name");
+                last_name = ResultSet1.getString("last_name");
+            }
+            return new Student(studentID, first_name, last_name, birthDate);
+        }
+        catch (SQLException sqlException)
+        {
+            System.out.println("!!! SQLException: failed to alter Students table");
+            System.out.println(sqlException.getMessage());
+            return null;
+        }
+
     }
 }
