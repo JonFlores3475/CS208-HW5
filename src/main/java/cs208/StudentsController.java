@@ -150,7 +150,7 @@ public class StudentsController {
      */
     // TODO: implement this route
     @DeleteMapping(value = "/students/{id}")
-    void delete(@PathVariable("id") int id) {
+    String delete(@PathVariable("id") int id) {
         System.out.println("id = " + id);
         try {
             Student studentToDelete = Main.database.getStudentById(id);
@@ -167,5 +167,6 @@ public class StudentsController {
                     "failed to delete the student with id = " + id + " from the database"
             );
         }
+                    return "Student with id = " + id +" successfully deleted.";
     }
 }

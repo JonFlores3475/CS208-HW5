@@ -2,12 +2,7 @@ package cs208;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.sql.SQLException;
@@ -15,8 +10,7 @@ import java.util.ArrayList;
 
 
 @RestController
-public class RegisteredStudentsController
-{
+public class RegisteredStudentsController {
 
     /**
      * GET /registered_students
@@ -25,8 +19,7 @@ public class RegisteredStudentsController
      * registered_students, students and classes tables in the database) as JSON
      */
     @GetMapping(value = "/registered_students", produces = MediaType.APPLICATION_JSON_VALUE)
-    ArrayList<RegisteredStudentJoinResult> registered_students()
-    {
+    ArrayList<RegisteredStudentJoinResult> registered_students() {
         ArrayList<RegisteredStudentJoinResult> listOfRegisteredStudentJoinResults = Main.database.listAllRegisteredStudents();
 
         return listOfRegisteredStudentJoinResults;
@@ -36,22 +29,31 @@ public class RegisteredStudentsController
     /**
      * POST /add_student_to_class
      * with the following form parameters:
-     *      studentId
-     *      classId
-     *
+     * studentId
+     * classId
+     * <p>
      * The parameters passed in the body of the POST request will be inserted
      * into the registered_students table in the database.
      */
     // TODO: implement this route
-
+    @PostMapping(value = "/registered_students/add", produces = MediaType.APPLICATION_JSON_VALUE)
+    ArrayList<RegisteredStudentJoinResult> registered_students(
+            @RequestParam("idOfStudentToAdd") int idOfStudentToAdd,
+            @RequestParam("idOfClassToAddTo") int idOfClassToAddTo
+    ) {
+        System.out.println("idOfStudentToADD = " + idOfStudentToAdd);
+        System.out.println("idOfClassToAddTo = " + idOfClassToAddTo);
+        Main.database.addStudentToClass(idOfStudentToAdd, idOfClassToAddTo);
+        return Main.database.listAllRegisteredStudents();
+    }
 
 
     /**
      * DELETE /drop_student_from_class
      * with the following form parameters:
-     *      studentId
-     *      classId
-     *
+     * studentId
+     * classId
+     * <p>
      * Deletes the student with id = {studentId} from the class with id = {classId}
      * from the registered_students in the database.
      *
@@ -59,6 +61,30 @@ public class RegisteredStudentsController
      * @throws ResponseStatusException: a 404 status code if the class with id = {classId} does not exist
      */
     // TODO: implement this route
+    @DeleteMapping(value = "/registered_students/delete", produces = MediaType.APPLICATION_JSON_VALUE)
+    ArrayList<RegisteredStudentJoinResult> registered_students_new(
+            @RequestParam("idOfStudentToDelete") int idOfStudentToDelete,
+            @RequestParam("idOfClassToDeleteFrom") int idOfClassToDeleteFrom
+    ) {
+        System.out.println("idOfStudentToADD = " + idOfStudentToDelete);
+        System.out.println("idOfClassToAddTo = " + idOfClassToDeleteFrom);
+        Student deletedStudent = Main.database.getStudentById(idOfStudentToDelete);
+        Class classStudentDeletedFrom = Main.database.getClassWithId(idOfClassToDeleteFrom);
+        if(deletedStudent  == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Unable to find student with student id = " + idOfStudentToDelete + " because it does not exist."
+            );
+        }
+        if(classStudentDeletedFrom == null){
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Unable to find class with class id = " + idOfClassToDeleteFrom + " because it does not exist."
+            );
+        }
+        Main.database.deleteStudentFromClass(idOfStudentToDelete, idOfClassToDeleteFrom);
+        return Main.database.listAllRegisteredStudents();
+    }
 
 
 

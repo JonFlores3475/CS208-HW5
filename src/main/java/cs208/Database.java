@@ -514,4 +514,76 @@ public class Database {
             throw sqlException;
         }
     }
+    public void addStudentToClass(int idOfStudentToAdd, int idOfClassToAddTo){
+        String sql = "INSERT INTO registered_students (class_id, student_id, signup_date)\n" +
+                "VALUES (?,?,?)";
+        String sql1 = "SELECT id\n" +
+                "FROM students\n" +
+                "WHERE id = ?";
+        String sql2 = "SELECT id\n" +
+                "FROM classes\n" +
+                "WHERE id = ?";
+        try {
+            Connection connection = getDatabaseConnection();
+            PreparedStatement preparedStatement1 = connection.prepareStatement(sql1);
+            preparedStatement1.setInt(1, idOfStudentToAdd);
+            ResultSet res = preparedStatement1.executeQuery();
+            if (!res.next()) {
+                System.out.println("No such Student ID, please try again here: \n");
+                connection.close();
+            }
+            PreparedStatement preparedStatement2 = connection.prepareStatement(sql2);
+            preparedStatement2.setInt(1, idOfClassToAddTo);
+            ResultSet res2 = preparedStatement2.executeQuery();
+            if (!res2.next()) {
+                System.out.println("No such class ID, please try again here: \n");
+                connection.close();
+            }
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1, idOfClassToAddTo);
+            preparedStatement.setInt(2, idOfStudentToAdd);
+            java.util.Date utilDate = new java.util.Date();
+            java.sql.Date timestamp = new java.sql.Date(utilDate.getTime());
+            preparedStatement.setDate(3, timestamp);
+            preparedStatement.execute();
+            connection.close();
+        } catch (SQLException sqlException) {
+            System.out.println(sqlException.getMessage());
+        }
+    }
+    public void deleteStudentFromClass(int idOfStudentToDelete, int idOfClassToDeleteFrom){
+        String sql = "DELETE\n" +
+                "FROM registered_students\n"+
+                "WHERE class_id = ? and student_id = ?";
+        String sql1 = "SELECT id\n" +
+                "FROM students\n" +
+                "WHERE id = ?";
+        String sql2 = "SELECT id\n" +
+                "FROM classes\n" +
+                "WHERE id = ?";
+        try {
+            Connection connection = getDatabaseConnection();
+            PreparedStatement preparedStatement1 = connection.prepareStatement(sql1);
+            preparedStatement1.setInt(1, idOfStudentToDelete);
+            ResultSet res = preparedStatement1.executeQuery();
+            if (!res.next()) {
+                System.out.println("No such Student ID, please try again here: \n");
+                connection.close();
+            }
+            PreparedStatement preparedStatement2 = connection.prepareStatement(sql2);
+            preparedStatement2.setInt(1, idOfClassToDeleteFrom);
+            ResultSet res2 = preparedStatement2.executeQuery();
+            if (!res2.next()) {
+                System.out.println("No such class ID, please try again here: \n");
+                connection.close();
+            }
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1, idOfClassToDeleteFrom);
+            preparedStatement.setInt(2, idOfStudentToDelete);
+            preparedStatement.execute();
+            connection.close();
+        } catch (SQLException sqlException) {
+            System.out.println(sqlException.getMessage());
+        }
+    }
 }
