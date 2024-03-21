@@ -628,5 +628,68 @@ public class Database {
         }
         return listOfRegisteredStudentJoinResults;
     }
+    public ArrayList<RegisteredStudentJoinResult> showAllStudentsClasses(int studentId){
+        String First = null;
+        String Last = null;
+        Boolean proceed = false;
+        ResultSet resultSet = null;
+        ArrayList<RegisteredStudentJoinResult> studentClasses = new ArrayList<RegisteredStudentJoinResult>();
+        String sql =
+                "SELECT ALL *\n" +
+                        "FROM(\n"+
+                        "SELECT students.id, students.first_name || ' ' || students.last_name AS student_full_name, classes.code, classes.title\n" +
+                        "FROM students\n" +
+                        "INNER JOIN registered_students ON students.id = registered_students.student_id\n" +
+                        "INNER JOIN classes ON classes.id = registered_students.class_id\n" +
+                        "ORDER BY class_id)\n" +
+                        "WHERE student_full_name = ?;" ;
+        String sql1 = "SELECT first_name, last_name\n" +
+                "FROM students\n" +
+                "WHERE students.id = ?";
+        try{
+            Connection connection = getDatabaseConnection();
+            while(!proceed) {
+                PreparedStatement preparedStatement1 = connection.prepareStatement(sql1);
+                preparedStatement1.setInt(1, studentId);
+                ResultSet resultSet1 = preparedStatement1.executeQuery();
+                if (!resultSet1.next()) {
+                    System.out.println("Either this student is not enrolled in any classes or this student does not exist.");
+                    connection.close();
+                }
+                First = resultSet1.getString(1);
+                Last = resultSet1.getString(2);
+                PreparedStatement preparedStatement = connection.prepareStatement(sql);
+                preparedStatement.setString(1, First + " " + Last);
+                resultSet = preparedStatement.executeQuery();
+                if (!resultSet.next()) {
+                    System.out.println("Either this student is not enrolled in any classes or this student does not exist.");
+                    connection.close();
+                }
+                proceed = true;
+            }
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1, First + " " + Last);
+            resultSet = preparedStatement.executeQuery();
+            printTableHeader(new String[]{"students.id", "student_full_name", "classes.code", "classes.title"});
 
+            while (resultSet.next())
+            {
+                int id = resultSet.getInt("id");
+                String studentFullName = resultSet.getString("student_full_name");
+                String code = resultSet.getString("code");
+                String title = resultSet.getString("title");
+
+                System.out.printf("| %d | %s | %s | %s |%n", id, studentFullName, code, title);
+                RegisteredStudentJoinResult registeredStudentJoinResultForCurrentRow = new RegisteredStudentJoinResult(id, studentFullName, code, title);
+                studentClasses.add(registeredStudentJoinResultForCurrentRow);
+            }
+            connection.close();
+        }
+        catch (SQLException sqlException)
+        {
+            System.out.println("!!! SQLException: failed to query the registered_students table. Make sure you executed the schema.sql and seeds.sql scripts");
+            System.out.println(sqlException.getMessage());
+        }
+        return studentClasses;
+    }
 }

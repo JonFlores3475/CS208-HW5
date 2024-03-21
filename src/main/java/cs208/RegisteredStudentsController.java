@@ -117,5 +117,19 @@ public class RegisteredStudentsController {
      * @throws ResponseStatusException: a 404 status code if the student with id = {studentId} does not exist
      */
     // TODO: implement this route
-
+    @GetMapping(value = "/classes_in_which_student_is_enrolled/{studentId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    ArrayList<RegisteredStudentJoinResult> studentClasses(
+            @PathVariable("studentId") int studentId
+    )
+    {
+        System.out.println("Student ID to search for = " + studentId);
+        Student student = Main.database.getStudentById(studentId);
+        if(student == null){
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "The student with student ID = " + studentId + " could not be found, because it does not exist."
+            );
+        }
+        return Main.database.showAllStudentsClasses(studentId);
+    }
 }
