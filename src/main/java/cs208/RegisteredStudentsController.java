@@ -96,6 +96,14 @@ public class RegisteredStudentsController {
      * that are taking the class {classCode}
      */
     // TODO: implement this route
+    @GetMapping(value = "/registered_students/{classCode}", produces = MediaType.APPLICATION_JSON_VALUE)
+    ArrayList<RegisteredStudentJoinResult> studentsRegisteredInClass(
+            @PathVariable("classCode") String classCode
+    )
+    {
+        System.out.println("Class to search for = " + classCode);
+        return Main.database.showAllStudentsInClass(classCode);
+    }
 
 
 

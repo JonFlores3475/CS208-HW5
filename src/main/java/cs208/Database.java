@@ -586,4 +586,47 @@ public class Database {
             System.out.println(sqlException.getMessage());
         }
     }
+    public ArrayList<RegisteredStudentJoinResult> showAllStudentsInClass(String classCode){
+        String sql =
+                "SELECT *\n" +
+                        "FROM(\n"+
+                        "SELECT students.id, students.first_name || ' ' || students.last_name AS student_full_name, classes.code, classes.title\n" +
+                        "FROM students\n" +
+                        "INNER JOIN registered_students ON students.id = registered_students.student_id\n" +
+                        "INNER JOIN classes ON classes.id = registered_students.class_id\n" +
+                        "ORDER BY student_id)\n" +
+                        "WHERE code = ?;" ;
+        ArrayList<RegisteredStudentJoinResult> listOfRegisteredStudentJoinResults = new ArrayList<>();
+        try{
+            Connection connection = getDatabaseConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1, classCode);
+            ResultSet resultSet = preparedStatement.executeQuery();
+        if(!resultSet.next()) {
+            System.out.println("Either no students are enrolled in this class, or this class code does not exist.\n");
+            connection.close();
+        }
+            printTableHeader(new String[]{"students.id", "student_full_name", "classes.code", "classes.title"});
+
+            while (resultSet.next())
+            {
+                int id = resultSet.getInt("id");
+                String studentFullName = resultSet.getString("student_full_name");
+                String code = resultSet.getString("code");
+                String title = resultSet.getString("title");
+
+                System.out.printf("| %d | %s | %s | %s |%n", id, studentFullName, code, title);
+                RegisteredStudentJoinResult registeredStudentJoinResultForCurrentRow = new RegisteredStudentJoinResult(id, studentFullName, code, title);
+                listOfRegisteredStudentJoinResults.add(registeredStudentJoinResultForCurrentRow);
+            }
+            connection.close();
+        }
+        catch (SQLException sqlException)
+        {
+            System.out.println("!!! SQLException: failed to query the registered_students table. Make sure you executed the schema.sql and seeds.sql scripts");
+            System.out.println(sqlException.getMessage());
+        }
+        return listOfRegisteredStudentJoinResults;
+    }
+
 }
